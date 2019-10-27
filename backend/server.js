@@ -1,5 +1,7 @@
 import { loadImage } from 'canvas'
 import WebSocket from 'ws'
+import Koa from 'koa'
+import serve from 'koa-static'
 
 import Canvas from './Canvas'
 
@@ -9,8 +11,11 @@ const MINUTE = 60 * SECOND
 const WIDTH = 750
 const HEIGHT = 750
 
+const PORT = 80
+
 const canvas = new Canvas({ width: WIDTH, height: HEIGHT })
 const server = new WebSocket.Server({ port: "8081" })
+const app = new Koa
 
 const restart = () => {
     loadImage(`https://picsum.photos/${WIDTH}/${HEIGHT}`)
@@ -33,6 +38,9 @@ const restart = () => {
 restart()
 
 setInterval(restart, 5 * MINUTE)
+
+app.use(serve(__dirname + '../front/dist/'))
+app.listen(PORT)
 
 server.on('connection', socket => {
     socket.send = (...args) => WebSocket.prototype.send.call(socket, JSON.stringify(args))
